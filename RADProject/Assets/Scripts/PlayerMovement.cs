@@ -1,17 +1,28 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.Tilemaps;
 
 public class PlayerMovement : MonoBehaviour
 {
     [Header("Movement Settings")] 
     [SerializeField] private float _moveSpeed = 5f;
     [SerializeField] private LayerMask _obstacleMask;
+    [SerializeField] private LayerMask _doorMask;
+    [SerializeField] private LayerMask _washingMask;
+
+    [Header("Player Stats")] 
+    public int Contamination;
+
+    [Header("Path Taken")] 
+    [SerializeField] private List<Vector2> _path;
 
     [Header("References")] 
     [SerializeField] private Grid _grid;
     private Vector2 _targetPos;
     private bool _isMoving;
+    private bool _contaminated;
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
@@ -30,8 +41,16 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (Contamination == 100)
+        {
+            Contamination = 0;
+            _moveSpeed *= 2;
+            
+            StartCoroutine(FollowPath());
+        }
+        
         // Only accept input when not already moving
-        if (_isMoving) return;
+        if (_isMoving || _contaminated) return;
 
         Vector2 inputDirection = GetInputDirection();
         if (inputDirection != Vector2.zero)
@@ -40,6 +59,16 @@ public class PlayerMovement : MonoBehaviour
             if (CanMoveTo(targetCell))
             {
                 StartCoroutine(MoveToTarget(targetCell));
+                _path.Add(transform.position);
+                if (IsDoorTile(targetCell))
+                {
+                    SetContamination(20);
+                }
+
+                if (IsWashingTile(targetCell))
+                {
+                    Contamination = 0;
+                }
             }
         }
     }
@@ -61,6 +90,20 @@ public class PlayerMovement : MonoBehaviour
         }
         
         return Vector2.zero;
+    }
+
+    private bool IsDoorTile(Vector2 worldPosition)
+    {
+        float checkRadius = _grid.cellSize.x * 0.4f;
+        Collider2D hit = Physics2D.OverlapCircle(worldPosition, checkRadius, _doorMask);
+        return hit;
+    }
+    
+    private bool IsWashingTile(Vector2 worldPosition)
+    {
+        float checkRadius = _grid.cellSize.x * 0.4f;
+        Collider2D hit = Physics2D.OverlapCircle(worldPosition, checkRadius, _washingMask);
+        return hit;
     }
 
     /// <summary>Checks if the destination cell is free of obstacles.</summary>
@@ -88,10 +131,33 @@ public class PlayerMovement : MonoBehaviour
         _isMoving = false;
     }
 
+    private IEnumerator FollowPath()
+    {
+        _contaminated = true;
+        print("Following Path!");
+        for (int i = _path.Count - 1; i >= 0; i--)
+        {
+            StartCoroutine(MoveToTarget(_path[i]));
+            yield return new WaitWhile(() => _isMoving);
+            _path.Remove(_path[i]);
+        }
+        
+        if (_path.Count == 0)
+        {
+            string currentSceneName = SceneManager.GetActiveScene().name; 
+            SceneManager.LoadScene(currentSceneName);
+        }
+    }
+
     /// <summary>Snaps a world position to the centre of its grid cell.</summary>
     private Vector2 GetSnappedPosition(Vector2 worldPos)
     {
         Vector3Int cellPos = _grid.WorldToCell(worldPos);
         return _grid.GetCellCenterWorld(cellPos);
+    }
+
+    private void SetContamination(int amount)
+    {
+        Contamination += amount;
     }
 }
