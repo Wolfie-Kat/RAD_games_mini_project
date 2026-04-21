@@ -23,6 +23,8 @@ public class PlayerMovement : MonoBehaviour
     private Vector2 _targetPos;
     private bool _isMoving;
     private bool _contaminated;
+    private bool _onDoor;
+    private DoorOpenerManager _currentDoorManager;
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
@@ -64,10 +66,18 @@ public class PlayerMovement : MonoBehaviour
                 {
                     SetContamination(20);
                 }
+                else
+                {
+                    if (_onDoor)
+                    {
+                        CloseDoor();
+                    }
+                }
 
                 if (IsWashingTile(targetCell))
                 {
                     Contamination = 0;
+                    _path.Clear();
                 }
             }
         }
@@ -92,11 +102,37 @@ public class PlayerMovement : MonoBehaviour
         return Vector2.zero;
     }
 
+// Modified IsDoorTile method
     private bool IsDoorTile(Vector2 worldPosition)
     {
         float checkRadius = _grid.cellSize.x * 0.4f;
         Collider2D hit = Physics2D.OverlapCircle(worldPosition, checkRadius, _doorMask);
-        return hit;
+    
+        if (hit == null) return false;
+    
+        DoorOpenerManager doorOpenerManager = hit.GetComponent<DoorOpenerManager>();
+        if (doorOpenerManager == null) return false;
+    
+        doorOpenerManager.OpenDoor();
+    
+        if (doorOpenerManager._doorType == DoorOpenerManager.DoorType.Iron)
+        {
+            _onDoor = true;
+            _currentDoorManager = doorOpenerManager; // Store reference
+        }
+    
+        return true;
+    }
+
+// Simplified CloseDoor method
+    private void CloseDoor()
+    {
+        if (_currentDoorManager != null)
+        {
+            _currentDoorManager.CloseDoor();
+            _currentDoorManager = null;
+        }
+        _onDoor = false;
     }
     
     private bool IsWashingTile(Vector2 worldPosition)
