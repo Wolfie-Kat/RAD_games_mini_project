@@ -31,6 +31,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private GameObject _playerCanvas;
     [SerializeField] private TextMeshProUGUI _keyText;
     [SerializeField] private CanvasGroup _fadein;
+    [SerializeField] private CanvasGroup _whispers;
     [SerializeField] private TypeWriterScript _typeWriterScript;
     private Vector2 _targetPos;
     private bool _isMoving;
@@ -95,7 +96,7 @@ public class PlayerMovement : MonoBehaviour
                 if (_typeWriterScript.StartedTyping == false)
                 {
                     StartCoroutine(Fade(true, false,
-                    "You spiral because you did not clean yourself properly, leading to excessive cleaning and wasting too much time."));
+                        "You did not clean yourself fast enough and missed your psychiatrist appointment."));
                 }
             }
 
@@ -114,6 +115,8 @@ public class PlayerMovement : MonoBehaviour
             _moveSpeed *= 2;
             
             StartCoroutine(FollowPath());
+            StartCoroutine(Fade(true, false,
+                "You feel to contaminated and miss your psychiatrist appointment.", 2f));
         }
 
         if (CurrentReturns == MaxReturns)
@@ -121,7 +124,7 @@ public class PlayerMovement : MonoBehaviour
             if (_typeWriterScript.StartedTyping == false)
             {
                 StartCoroutine(Fade(true, false,
-                "You cleaned yourself too many times and as such you missed your psychiatrist appointment"));
+                "You cleaned yourself too many times and missed your psychiatrist appointment."));
             }
         }
         
@@ -158,6 +161,7 @@ public class PlayerMovement : MonoBehaviour
                     _minigameMaxProgress = Random.Range(4, 6);
                     _minigameProgress = 0;
                     Contamination = 0;
+                    _whispers.alpha = 0;
                     _path.Clear();
                 }
 
@@ -165,7 +169,7 @@ public class PlayerMovement : MonoBehaviour
                 {
                     if (_typeWriterScript.StartedTyping == false)
                     {
-                        StartCoroutine(Fade(true, true, "You leave your house and head for the psychiatrist office.", "Level 2"));
+                        StartCoroutine(Fade(true, true, "You leave your house and head outside.", 1f,"Level 2"));
                     }
                 }
             }
@@ -288,20 +292,15 @@ public class PlayerMovement : MonoBehaviour
         
         if (_path.Count == 0)
         {
-            if (_typeWriterScript.StartedTyping == false)
-            {
-                StartCoroutine(Fade(true, false,
-                "You feel too contaminated and use too much time trying to clean yourself. You miss your psychiatrist appointment."));
-            }
         }
     }
 
     // Better structure:
-    private IEnumerator Fade(bool fadeOut, bool win, string text = "", string sceneName = "")
+    private IEnumerator Fade(bool fadeOut, bool win, string text = "",float duration = 1f, string sceneName = "")
     {
         if (fadeOut)
         {
-            yield return StartCoroutine(FadeInCoroutine(1f));
+            yield return StartCoroutine(FadeInCoroutine(duration));
             if (_typeWriterScript.StartedTyping == false)
             {
                 yield return StartCoroutine(_typeWriterScript.StartTyping(text));
@@ -309,7 +308,7 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            yield return StartCoroutine(FadeOutCoroutine(1f));
+            yield return StartCoroutine(FadeOutCoroutine(duration));
         }
     
         // Handle scene transition AFTER all fades and typing
@@ -366,5 +365,6 @@ public class PlayerMovement : MonoBehaviour
     private void SetContamination(int amount)
     {
         Contamination += amount;
+        _whispers.alpha = Contamination * 0.01f;
     }
 }

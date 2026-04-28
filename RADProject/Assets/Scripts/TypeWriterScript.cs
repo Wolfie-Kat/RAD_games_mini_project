@@ -7,7 +7,7 @@ public class TypeWriterScript : MonoBehaviour
     public bool DoneTyping;
     public bool StartedTyping;
     
-    public IEnumerator StartTyping(string fullText, float typingDelay = 0.05f)
+    public IEnumerator StartTyping(string fullText, float typingDelay = 0.04f)
     {
         DoneTyping = false;
         StartedTyping = true;
