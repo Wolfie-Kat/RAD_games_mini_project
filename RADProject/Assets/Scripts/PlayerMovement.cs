@@ -50,6 +50,11 @@ public class PlayerMovement : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
+        if (SceneManager.GetActiveScene().name.Contains("Level1 Katrine"))
+        {
+            AudioManager.Instance.Ambience(SoundType.Light_Ambience);
+        }
+
         CurrentReturns = 0;
         // If no grid is assigned, try to find one in the scene
         if (_grid == null)
@@ -383,12 +388,12 @@ public class PlayerMovement : MonoBehaviour
         {
             if (_stepAlternate)
             {
-                AudioManager.Instance.Play(AudioManager.SoundType.Step_Grass_1);
+                AudioManager.Instance.Play(SoundType.Step_Grass_1);
                 _stepAlternate = !_stepAlternate;
             }
             else
             {
-                AudioManager.Instance.Play(AudioManager.SoundType.Step_Grass_2);
+                AudioManager.Instance.Play(SoundType.Step_Grass_2);
                 _stepAlternate = !_stepAlternate;
             }
         }
@@ -396,12 +401,12 @@ public class PlayerMovement : MonoBehaviour
         {
             if (_stepAlternate)
                 {
-                    AudioManager.Instance.Play(AudioManager.SoundType.Step_Stone_1);
+                    AudioManager.Instance.Play(SoundType.Step_Stone_1);
                     _stepAlternate = !_stepAlternate;
                 }
                 else
                 {
-                    AudioManager.Instance.Play(AudioManager.SoundType.Step_Stone_2);
+                    AudioManager.Instance.Play(SoundType.Step_Stone_2);
                     _stepAlternate = !_stepAlternate;
                 }
         }
