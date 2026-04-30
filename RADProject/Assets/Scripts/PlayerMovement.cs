@@ -1,8 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Tilemaps;
+using UnityEngine.UI;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -11,44 +13,119 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private LayerMask _obstacleMask;
     [SerializeField] private LayerMask _doorMask;
     [SerializeField] private LayerMask _washingMask;
+    [SerializeField] private LayerMask _finishMask;
 
     [Header("Player Stats")] 
     public int Contamination;
+    public int MaxReturns;
+    public int CurrentReturns;
+    public string CurrentKey;
+    public float CleaningSatisfaction;
 
     [Header("Path Taken")] 
     [SerializeField] private List<Vector2> _path;
 
     [Header("References")] 
     [SerializeField] private Grid _grid;
+    [SerializeField] private Slider _slider;
+    [SerializeField] private GameObject _playerCanvas;
+    [SerializeField] private TextMeshProUGUI _keyText;
+    [SerializeField] private CanvasGroup _fadein;
+    [SerializeField] private CanvasGroup _whispers;
+    [SerializeField] private TypeWriterScript _typeWriterScript;
     private Vector2 _targetPos;
     private bool _isMoving;
     private bool _contaminated;
     private bool _onDoor;
+    private bool _isCleaning;
     private DoorOpenerManager _currentDoorManager;
+    private float _cleaningMinigameTimer;
+    private float _cleaningMinigameTimerMax;
+    private int _minigameProgress;
+    private int _minigameMaxProgress;
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
+        CurrentReturns = 0;
         // If no grid is assigned, try to find one in the scene
         if (_grid == null)
         {
             _grid = FindFirstObjectByType<Grid>();
         }
+
+        _typeWriterScript = _fadein.gameObject.transform.Find("Text").gameObject.GetComponent<TypeWriterScript>();
         
         // Snap the player to the nearest grid cell at start
         transform.position = GetSnappedPosition(transform.position);
         _targetPos = transform.position;
+        StartCoroutine(Fade(false, true));
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (_isCleaning)
+        {
+            _cleaningMinigameTimer += Time.deltaTime;
+            CleaningSatisfaction -= 4 * Time.deltaTime;
+            _slider.value = CleaningSatisfaction;
+            if (Input.GetKeyDown(CurrentKey))
+            {
+                if (CleaningSatisfaction < 10)
+                {
+                    CleaningSatisfaction += 1f;
+                }
+
+                if (CleaningSatisfaction > 10)
+                {
+                    CleaningSatisfaction = 10;
+                }
+            }
+
+            if (_cleaningMinigameTimer >= _cleaningMinigameTimerMax)
+            {
+                _cleaningMinigameTimer = 0;
+                _cleaningMinigameTimerMax = Random.Range(4, 7);
+                GenerateNewLetter();
+                _minigameProgress++;
+            }
+
+            if (CleaningSatisfaction <= 0)
+            {
+                if (_typeWriterScript.StartedTyping == false)
+                {
+                    StartCoroutine(Fade(true, false,
+                        "You did not clean yourself fast enough and missed your psychiatrist appointment."));
+                }
+            }
+
+            if (_minigameProgress == _minigameMaxProgress)
+            {
+                _isCleaning = false;
+                CurrentKey = "";
+                CurrentReturns++;
+                _playerCanvas.SetActive(false);
+            }
+            return;
+        }
         if (Contamination == 100)
         {
             Contamination = 0;
             _moveSpeed *= 2;
             
             StartCoroutine(FollowPath());
+            StartCoroutine(Fade(true, false,
+                "You feel to contaminated and miss your psychiatrist appointment.", 2f));
+        }
+
+        if (CurrentReturns == MaxReturns)
+        {
+            if (_typeWriterScript.StartedTyping == false)
+            {
+                StartCoroutine(Fade(true, false,
+                "You cleaned yourself too many times and missed your psychiatrist appointment."));
+            }
         }
         
         // Only accept input when not already moving
@@ -76,8 +153,24 @@ public class PlayerMovement : MonoBehaviour
 
                 if (IsWashingTile(targetCell))
                 {
+                    _isCleaning = true;
+                    _playerCanvas.SetActive(true);
+                    CleaningSatisfaction = 10;
+                    GenerateNewLetter();
+                    _cleaningMinigameTimerMax = Random.Range(4, 6);
+                    _minigameMaxProgress = Random.Range(4, 6);
+                    _minigameProgress = 0;
                     Contamination = 0;
+                    _whispers.alpha = 0;
                     _path.Clear();
+                }
+
+                if (IsFinishTile(targetCell))
+                {
+                    if (_typeWriterScript.StartedTyping == false)
+                    {
+                        StartCoroutine(Fade(true, true, "You leave your house and head outside.", 1f,"Level 2"));
+                    }
                 }
             }
         }
@@ -124,7 +217,7 @@ public class PlayerMovement : MonoBehaviour
         return true;
     }
 
-// Simplified CloseDoor method
+    // Simplified CloseDoor method
     private void CloseDoor()
     {
         if (_currentDoorManager != null)
@@ -139,6 +232,13 @@ public class PlayerMovement : MonoBehaviour
     {
         float checkRadius = _grid.cellSize.x * 0.4f;
         Collider2D hit = Physics2D.OverlapCircle(worldPosition, checkRadius, _washingMask);
+        return hit;
+    }
+
+    private bool IsFinishTile(Vector2 worldPosition)
+    {
+        float checkRadius = _grid.cellSize.x * 0.4f;
+        Collider2D hit = Physics2D.OverlapCircle(worldPosition, checkRadius, _finishMask);
         return hit;
     }
 
@@ -167,6 +267,18 @@ public class PlayerMovement : MonoBehaviour
         _isMoving = false;
     }
 
+    private void GenerateNewLetter()
+    {
+        string[] availableLetters = new[]
+        {
+            "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u",
+            "v", "w", "x", "y", "z"
+        };
+
+        CurrentKey = availableLetters[Random.Range(0, availableLetters.Length - 1)];
+        _keyText.text = $"Press \"{CurrentKey.ToUpper()}\"!";
+    }
+
     private IEnumerator FollowPath()
     {
         _contaminated = true;
@@ -180,9 +292,67 @@ public class PlayerMovement : MonoBehaviour
         
         if (_path.Count == 0)
         {
-            string currentSceneName = SceneManager.GetActiveScene().name; 
-            SceneManager.LoadScene(currentSceneName);
         }
+    }
+
+    // Better structure:
+    private IEnumerator Fade(bool fadeOut, bool win, string text = "",float duration = 1f, string sceneName = "")
+    {
+        if (fadeOut)
+        {
+            yield return StartCoroutine(FadeInCoroutine(duration));
+            if (_typeWriterScript.StartedTyping == false)
+            {
+                yield return StartCoroutine(_typeWriterScript.StartTyping(text));
+            }
+        }
+        else
+        {
+            yield return StartCoroutine(FadeOutCoroutine(duration));
+        }
+    
+        // Handle scene transition AFTER all fades and typing
+        if (_typeWriterScript.DoneTyping)
+        {
+            if (win)
+                SceneManager.LoadScene(sceneName);
+            else
+                ReloadScene();
+        }
+    }
+
+    private IEnumerator FadeInCoroutine(float duration)
+    {
+        float elapsed = 0;
+        float startAlpha = _fadein.alpha;
+    
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            _fadein.alpha = Mathf.Lerp(startAlpha, 1f, elapsed / duration);
+            yield return null;
+        }
+        _fadein.alpha = 1f;
+    }
+
+    private IEnumerator FadeOutCoroutine(float duration)
+    {
+        float elapsed = 0;
+        float startAlpha = _fadein.alpha;
+    
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            _fadein.alpha = Mathf.Lerp(startAlpha, 0f, elapsed / duration);
+            yield return null;
+        }
+        _fadein.alpha = 0f;
+    }
+
+    private void ReloadScene()
+    {
+        string currentSceneName = SceneManager.GetActiveScene().name;
+        SceneManager.LoadScene(currentSceneName);
     }
 
     /// <summary>Snaps a world position to the centre of its grid cell.</summary>
@@ -195,5 +365,6 @@ public class PlayerMovement : MonoBehaviour
     private void SetContamination(int amount)
     {
         Contamination += amount;
+        _whispers.alpha = Contamination * 0.01f;
     }
 }

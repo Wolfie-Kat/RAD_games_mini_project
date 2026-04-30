@@ -4,6 +4,9 @@ using UnityEngine;
 public class SetContaminationText : MonoBehaviour
 {
     [SerializeField] private PlayerMovement _player;
+    [SerializeField] private TextMeshProUGUI _contamination;
+    [SerializeField] private TextMeshProUGUI _maxReturns;
+    [SerializeField] private TextMeshProUGUI _currentReturns;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -13,6 +16,8 @@ public class SetContaminationText : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        GetComponent<TextMeshProUGUI>().text = $"{_player.Contamination}%";
+        _contamination.text = $"{_player.Contamination}%";
+        _currentReturns.text = $"{_player.CurrentReturns}";
+        _maxReturns.text = $"{_player.MaxReturns}";
     }
 }
