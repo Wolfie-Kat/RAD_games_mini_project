@@ -37,7 +37,9 @@ public class AudioManager : MonoBehaviour
 
         // Water
         Pond_Water,
-        Sink_Water
+        Sink_Water_Start,
+        Sink_Water_Loop,
+        Sink_Water_Stop
 
         // Add more sound types as needed
     }

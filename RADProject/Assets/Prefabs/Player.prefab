@@ -69,6 +69,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 6809246402516553487}
+  - {fileID: 3337920992596526849}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &6764579253252404864
@@ -719,6 +720,67 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!1 &4345251807855347920
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3337920992596526849}
+  - component: {fileID: 3431307661117031631}
+  m_Layer: 0
+  m_Name: SoundManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3337920992596526849
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4345251807855347920}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7576577971085527889}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3431307661117031631
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4345251807855347920}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dad5cfdc10b0c4e40ab266e2f515f3e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AudioManager
+  AllSounds:
+  - Type: 16
+    Clip: {fileID: 8300000, guid: a3001877ec7eda841a4583b1c9d61a8a, type: 3}
+    Volume: 0.5
+    Source: {fileID: 0}
+  - Type: 17
+    Clip: {fileID: 8300000, guid: 40a807b3836e11945b7a145b96a48e31, type: 3}
+    Volume: 0.5
+    Source: {fileID: 0}
+  - Type: 18
+    Clip: {fileID: 8300000, guid: 6a7f7ee58faf20e499d009969dd25f9c, type: 3}
+    Volume: 0.5
+    Source: {fileID: 0}
+  - Type: 19
+    Clip: {fileID: 8300000, guid: cb3b902643fe9d94cada294d58805c6f, type: 3}
+    Volume: 0.5
+    Source: {fileID: 0}
 --- !u!1 &5310277509665669491
 GameObject:
   m_ObjectHideFlags: 0
