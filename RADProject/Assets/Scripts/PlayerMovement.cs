@@ -8,24 +8,24 @@ using UnityEngine.UI;
 
 public class PlayerMovement : MonoBehaviour
 {
-    [Header("Movement Settings")] 
+    [Header("Movement Settings")]
     [SerializeField] private float _moveSpeed = 5f;
     [SerializeField] private LayerMask _obstacleMask;
     [SerializeField] private LayerMask _doorMask;
     [SerializeField] private LayerMask _washingMask;
     [SerializeField] private LayerMask _finishMask;
 
-    [Header("Player Stats")] 
+    [Header("Player Stats")]
     public int Contamination;
     public int MaxReturns;
     public int CurrentReturns;
     public string CurrentKey;
     public float CleaningSatisfaction;
 
-    [Header("Path Taken")] 
+    [Header("Path Taken")]
     [SerializeField] private List<Vector2> _path;
 
-    [Header("References")] 
+    [Header("References")]
     [SerializeField] private Grid _grid;
     [SerializeField] private Slider _slider;
     [SerializeField] private GameObject _playerCanvas;
@@ -33,6 +33,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private CanvasGroup _fadein;
     [SerializeField] private CanvasGroup _whispers;
     [SerializeField] private TypeWriterScript _typeWriterScript;
+    [SerializeField] private FullscreenOverlay overlay;
     private Vector2 _targetPos;
     private bool _isMoving;
     private bool _contaminated;
@@ -43,7 +44,9 @@ public class PlayerMovement : MonoBehaviour
     private float _cleaningMinigameTimerMax;
     private int _minigameProgress;
     private int _minigameMaxProgress;
-    
+
+
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
@@ -55,7 +58,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         _typeWriterScript = _fadein.gameObject.transform.Find("Text").gameObject.GetComponent<TypeWriterScript>();
-        
+
         // Snap the player to the nearest grid cell at start
         transform.position = GetSnappedPosition(transform.position);
         _targetPos = transform.position;
@@ -105,6 +108,7 @@ public class PlayerMovement : MonoBehaviour
                 _isCleaning = false;
                 CurrentKey = "";
                 CurrentReturns++;
+                overlay.SetContamination(0);
                 _playerCanvas.SetActive(false);
             }
             return;
@@ -112,8 +116,9 @@ public class PlayerMovement : MonoBehaviour
         if (Contamination == 100)
         {
             Contamination = 0;
+            overlay.SetContamination(0);
             _moveSpeed *= 2;
-            
+
             StartCoroutine(FollowPath());
             StartCoroutine(Fade(true, false,
                 "You feel to contaminated and miss your psychiatrist appointment.", 2f));
@@ -127,7 +132,7 @@ public class PlayerMovement : MonoBehaviour
                 "You cleaned yourself too many times and missed your psychiatrist appointment."));
             }
         }
-        
+
         // Only accept input when not already moving
         if (_isMoving || _contaminated) return;
 
@@ -169,7 +174,7 @@ public class PlayerMovement : MonoBehaviour
                 {
                     if (_typeWriterScript.StartedTyping == false)
                     {
-                        StartCoroutine(Fade(true, true, "You leave your house and head outside.", 1f,"Level 2"));
+                        StartCoroutine(Fade(true, true, "You leave your house and head outside.", 1f, "Level 2"));
                     }
                 }
             }
@@ -181,7 +186,7 @@ public class PlayerMovement : MonoBehaviour
     {
         float horizontal = Input.GetAxisRaw("Horizontal");
         float vertical = Input.GetAxisRaw("Vertical");
-        
+
         // Prioritise horizontal movement over vertical (stops diagonal input)
         if (Mathf.Abs(horizontal) > 0.1f)
         {
@@ -191,29 +196,29 @@ public class PlayerMovement : MonoBehaviour
         {
             return new Vector2(0f, Mathf.Sign(vertical)) * _grid.cellSize.y;
         }
-        
+
         return Vector2.zero;
     }
 
-// Modified IsDoorTile method
+    // Modified IsDoorTile method
     private bool IsDoorTile(Vector2 worldPosition)
     {
         float checkRadius = _grid.cellSize.x * 0.4f;
         Collider2D hit = Physics2D.OverlapCircle(worldPosition, checkRadius, _doorMask);
-    
+
         if (hit == null) return false;
-    
+
         DoorOpenerManager doorOpenerManager = hit.GetComponent<DoorOpenerManager>();
         if (doorOpenerManager == null) return false;
-    
+
         doorOpenerManager.OpenDoor();
-    
+
         if (doorOpenerManager._doorType == DoorOpenerManager.DoorType.Iron)
         {
             _onDoor = true;
             _currentDoorManager = doorOpenerManager; // Store reference
         }
-    
+
         return true;
     }
 
@@ -227,7 +232,7 @@ public class PlayerMovement : MonoBehaviour
         }
         _onDoor = false;
     }
-    
+
     private bool IsWashingTile(Vector2 worldPosition)
     {
         float checkRadius = _grid.cellSize.x * 0.4f;
@@ -289,14 +294,14 @@ public class PlayerMovement : MonoBehaviour
             yield return new WaitWhile(() => _isMoving);
             _path.Remove(_path[i]);
         }
-        
+
         if (_path.Count == 0)
         {
         }
     }
 
     // Better structure:
-    private IEnumerator Fade(bool fadeOut, bool win, string text = "",float duration = 1f, string sceneName = "")
+    private IEnumerator Fade(bool fadeOut, bool win, string text = "", float duration = 1f, string sceneName = "")
     {
         if (fadeOut)
         {
@@ -310,7 +315,7 @@ public class PlayerMovement : MonoBehaviour
         {
             yield return StartCoroutine(FadeOutCoroutine(duration));
         }
-    
+
         // Handle scene transition AFTER all fades and typing
         if (_typeWriterScript.DoneTyping)
         {
@@ -325,7 +330,7 @@ public class PlayerMovement : MonoBehaviour
     {
         float elapsed = 0;
         float startAlpha = _fadein.alpha;
-    
+
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
@@ -339,7 +344,7 @@ public class PlayerMovement : MonoBehaviour
     {
         float elapsed = 0;
         float startAlpha = _fadein.alpha;
-    
+
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
@@ -366,5 +371,6 @@ public class PlayerMovement : MonoBehaviour
     {
         Contamination += amount;
         _whispers.alpha = Contamination * 0.01f;
+        overlay.SetContamination(Contamination * 0.01f);
     }
 }
