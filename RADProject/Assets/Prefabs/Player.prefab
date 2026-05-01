@@ -156,11 +156,15 @@ MonoBehaviour:
   _finishMask:
     serializedVersion: 2
     m_Bits: 512
+  _psychMask:
+    serializedVersion: 2
+    m_Bits: 1024
   Contamination: 0
   MaxReturns: 3
   CurrentReturns: 0
   CurrentKey: 
   CleaningSatisfaction: 0
+  TalkedToPsychiatrist: 0
   _path: []
   _grid: {fileID: 0}
   _minigameSlider: {fileID: 6690718765647475186}
@@ -170,6 +174,7 @@ MonoBehaviour:
   _fadein: {fileID: 0}
   _whispers: {fileID: 0}
   _typeWriterScript: {fileID: 0}
+  overlay: {fileID: 0}
 --- !u!61 &8053123095692900743
 BoxCollider2D:
   m_ObjectHideFlags: 0

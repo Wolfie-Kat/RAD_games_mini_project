@@ -339,7 +339,7 @@ public class PlayerMovement : MonoBehaviour
     private bool IsPsychTile(Vector2 worldPosition)
     {
         float checkRadius = _grid.cellSize.x * 0.4f;
-        Collider2D hit = Physics2D.OverlapCircle(worldPosition, checkRadius, _finishMask);
+        Collider2D hit = Physics2D.OverlapCircle(worldPosition, checkRadius, _psychMask);
         return hit;
     }
 
@@ -489,15 +489,15 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             if (_stepAlternate)
-                {
-                    AudioManager.Instance.Play(SoundType.Step_Stone_1);
-                    _stepAlternate = !_stepAlternate;
-                }
-                else
-                {
-                    AudioManager.Instance.Play(SoundType.Step_Stone_2);
-                    _stepAlternate = !_stepAlternate;
-                }
+            {
+                AudioManager.Instance.Play(SoundType.Step_Stone_1);
+                _stepAlternate = !_stepAlternate;
+            }
+            else
+            {
+                AudioManager.Instance.Play(SoundType.Step_Stone_2);
+                _stepAlternate = !_stepAlternate;
+            }
         }
     }
 }
