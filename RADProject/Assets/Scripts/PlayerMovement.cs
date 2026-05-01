@@ -46,12 +46,16 @@ public class PlayerMovement : MonoBehaviour
     private float _cleaningMinigameTimerMax;
     private int _minigameProgress;
     private int _minigameMaxProgress;
-
-
-
+    private bool _stepAlternate = true;
+    
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
+        if (SceneManager.GetActiveScene().name.Contains("Level1 Katrine"))
+        {
+            AudioManager.Instance.Ambience(SoundType.Light_Ambience);
+        }
+
         CurrentReturns = 0;
         // If no grid is assigned, try to find one in the scene
         if (_grid == null)
@@ -279,6 +283,10 @@ public class PlayerMovement : MonoBehaviour
     {
         _isMoving = true;
         _targetPos = newTarget;
+
+        // Footstep manager
+        FootstepManager();
+
         while (Vector2.Distance(transform.position, _targetPos) > 0.01f)
         {
             transform.position = Vector2.MoveTowards(transform.position, _targetPos, _moveSpeed * Time.deltaTime);
@@ -390,5 +398,35 @@ public class PlayerMovement : MonoBehaviour
         _contaminationSlider.value = Contamination;
         _whispers.alpha = Contamination * 0.01f;
         overlay.SetContamination(Contamination * 0.01f);
+    }
+    
+    private void FootstepManager()
+    {
+        if (SceneManager.GetActiveScene().name.ToLower().Contains("Level2"))
+        {
+            if (_stepAlternate)
+            {
+                AudioManager.Instance.Play(SoundType.Step_Grass_1);
+                _stepAlternate = !_stepAlternate;
+            }
+            else
+            {
+                AudioManager.Instance.Play(SoundType.Step_Grass_2);
+                _stepAlternate = !_stepAlternate;
+            }
+        }
+        else
+        {
+            if (_stepAlternate)
+                {
+                    AudioManager.Instance.Play(SoundType.Step_Stone_1);
+                    _stepAlternate = !_stepAlternate;
+                }
+                else
+                {
+                    AudioManager.Instance.Play(SoundType.Step_Stone_2);
+                    _stepAlternate = !_stepAlternate;
+                }
+        }
     }
 }

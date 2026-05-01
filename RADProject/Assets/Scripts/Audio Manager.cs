@@ -1,47 +1,29 @@
 using UnityEngine;
 using System.Collections.Generic;
  
+public enum SoundType
+{
+    // Ambiences
+    Light_Ambience, Birds_Ambience, Fan_Ambience,
+
+    // Contamination
+    Low_Hum_Creepy, Low_Hum, Sudden_Bass, Whispers,
+
+    // Doors
+    Door_Open, Door_Close, Heavy_Door_Open, Heavy_Door_Close,
+
+    // Effects
+    Crows, Ding, Heartbeat, Text_Boop,
+
+    // Footsteps
+    Step_Concrete, Step_Stone_1, Step_Stone_2, Step_Grass_1, Step_Grass_2,
+
+    // Water
+    Pond_Water, Sink_Water_Start, Sink_Water_Loop, Sink_Water_Stop
+}
+
 public class AudioManager : MonoBehaviour
 {
-    public enum SoundType
-    {
-        // Ambiences
-        Light_Ambience,
-        Birds_Ambience,
-        Fan_Ambience,
-
-        // Contamination
-        Low_Hum_Creepy,
-        Low_Hum,
-        Sudden_Bass,
-        Whispers,
-
-        // Doors
-        Door_Open,
-        Door_Close,
-        Heavy_Door_Open,
-        Heavy_Door_Close,
-
-        // Effects
-        Crows,
-        Ding,
-        Heartbeat,
-        Text_Boop,
-
-        // Footsteps
-        Step_Concrete,
-        Step_Stone_1,
-        Step_Stone_2,
-        Step_Grass_1,
-        Step_Grass_2,
-
-        // Water
-        Pond_Water,
-        Sink_Water
-
-        // Add more sound types as needed
-    }
- 
     [System.Serializable]
     public class Sound
     {
@@ -63,7 +45,7 @@ public class AudioManager : MonoBehaviour
  
     //Runtime collections
     private Dictionary<SoundType, Sound> _soundDictionary = new Dictionary<SoundType, Sound>();
-    private AudioSource _musicSource;
+    private AudioSource ambienceSrc;
  
     private void Awake()
     {
@@ -91,6 +73,7 @@ public class AudioManager : MonoBehaviour
  
         //Creates a new sound object
         var soundObj = new GameObject($"Sound_{type}");
+        soundObj.transform.SetParent(transform);
         var audioSrc = soundObj.AddComponent<AudioSource>();
  
         //Assigns your sound properties
@@ -105,22 +88,28 @@ public class AudioManager : MonoBehaviour
     }
  
     //Call this method to change music tracks
-    public void ChangeMusic(SoundType type)
+    public void Ambience(SoundType type)
     {
         if (!_soundDictionary.TryGetValue(type, out Sound track))
         {
-            Debug.LogWarning($"Music track {type} not found!");
+            Debug.LogWarning($"Ambience track {type} not found!");
             return;
         }
  
-        if (_musicSource == null)
+        if (ambienceSrc == null)
         {
-            var container = new GameObject("SoundTrackObj");
-            _musicSource = container.AddComponent<AudioSource>();
-            _musicSource.loop = true;
+            var container = new GameObject($"Ambience_{type}");
+            container.transform.SetParent(transform);
+            ambienceSrc = container.AddComponent<AudioSource>();
+            ambienceSrc.loop = true;
         }
  
-        _musicSource.clip = track.Clip;
-        _musicSource.Play();
+        ambienceSrc.clip = track.Clip;
+        ambienceSrc.volume = track.Volume;
+        ambienceSrc.Play();
+    }
+    public void StopAmbience(SoundType type)
+    {
+        Destroy(transform.Find($"Ambience_{type}").gameObject);
     }
 }
