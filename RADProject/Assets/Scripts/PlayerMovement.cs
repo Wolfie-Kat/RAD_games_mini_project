@@ -155,17 +155,20 @@ public class PlayerMovement : MonoBehaviour
 
                 if (IsWashingTile(targetCell))
                 {
-                    _isCleaning = true;
-                    _playerCanvas.SetActive(true);
-                    CleaningSatisfaction = 10;
-                    GenerateNewLetter();
-                    _cleaningMinigameTimerMax = Random.Range(4, 6);
-                    _minigameMaxProgress = Random.Range(4, 6);
-                    _minigameProgress = 0;
-                    Contamination = 0;
-                    _whispers.alpha = 0;
-                    _contaminationSlider.value = 0;
-                    _path.Clear();
+                    if (Contamination > 0)
+                    {
+                        _isCleaning = true;
+                        _playerCanvas.SetActive(true);
+                        CleaningSatisfaction = 10;
+                        GenerateNewLetter();
+                        _cleaningMinigameTimerMax = Random.Range(4, 6);
+                        _minigameMaxProgress = Random.Range(4, 6);
+                        _minigameProgress = 0;
+                        Contamination = 0;
+                        _whispers.alpha = 0;
+                        _contaminationSlider.value = 0;
+                        _path.Clear();
+                    }
                 }
 
                 if (IsFinishTile(targetCell))
