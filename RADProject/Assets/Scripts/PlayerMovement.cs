@@ -160,24 +160,38 @@ public class PlayerMovement : MonoBehaviour
 
                 if (IsWashingTile(targetCell))
                 {
-                    _isCleaning = true;
-                    _playerCanvas.SetActive(true);
-                    CleaningSatisfaction = 10;
-                    GenerateNewLetter();
-                    _cleaningMinigameTimerMax = Random.Range(4, 6);
-                    _minigameMaxProgress = Random.Range(4, 6);
-                    _minigameProgress = 0;
-                    Contamination = 0;
-                    _whispers.alpha = 0;
-                    _contaminationSlider.value = 0;
-                    _path.Clear();
+                    if (Contamination > 0)
+                    {
+                        _isCleaning = true;
+                        _playerCanvas.SetActive(true);
+                        CleaningSatisfaction = 10;
+                        GenerateNewLetter();
+                        _cleaningMinigameTimerMax = Random.Range(4, 6);
+                        _minigameMaxProgress = Random.Range(4, 6);
+                        _minigameProgress = 0;
+                        Contamination = 0;
+                        _whispers.alpha = 0;
+                        _contaminationSlider.value = 0;
+                        _path.Clear();
+                    }
                 }
 
                 if (IsFinishTile(targetCell))
                 {
                     if (_typeWriterScript.StartedTyping == false)
                     {
-                        StartCoroutine(Fade(true, true, "You leave your house and head outside.", 1f, "Level 2"));
+                        if (SceneManager.GetActiveScene().name.ToLower().Contains("tutorial"))
+                        {
+                            StartCoroutine(Fade(true, true, "", 1f,"Frederik Level 1"));
+                        }
+                        else if (SceneManager.GetActiveScene().name.Contains("1"))
+                        {
+                            StartCoroutine(Fade(true, true, "You leave your house and head outside.", 1f,"Level 2"));
+                        }
+                        else if (SceneManager.GetActiveScene().name.Contains("2"))
+                        {
+                            StartCoroutine(Fade(true, true, "You reach the psychiatrists office.", 1f,"Level 3"));
+                        }
                     }
                 }
             }
@@ -279,8 +293,8 @@ public class PlayerMovement : MonoBehaviour
     {
         string[] availableLetters = new[]
         {
-            "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u",
-            "v", "w", "x", "y", "z"
+            "b", "c", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "t", "u",
+            "v", "x", "y", "z"
         };
 
         CurrentKey = availableLetters[Random.Range(0, availableLetters.Length - 1)];
