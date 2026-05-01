@@ -16,7 +16,6 @@ public class SetContaminationText : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        _contamination.text = $"{_player.Contamination}%";
         _currentReturns.text = $"{_player.CurrentReturns}";
         _maxReturns.text = $"{_player.MaxReturns}";
     }

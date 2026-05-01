@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
 
@@ -27,7 +28,8 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private Grid _grid;
-    [SerializeField] private Slider _slider;
+    [SerializeField] private Slider _minigameSlider;
+    [SerializeField] private Slider _contaminationSlider;
     [SerializeField] private GameObject _playerCanvas;
     [SerializeField] private TextMeshProUGUI _keyText;
     [SerializeField] private CanvasGroup _fadein;
@@ -72,7 +74,7 @@ public class PlayerMovement : MonoBehaviour
         {
             _cleaningMinigameTimer += Time.deltaTime;
             CleaningSatisfaction -= 4 * Time.deltaTime;
-            _slider.value = CleaningSatisfaction;
+            _minigameSlider.value = CleaningSatisfaction;
             if (Input.GetKeyDown(CurrentKey))
             {
                 if (CleaningSatisfaction < 10)
@@ -167,6 +169,7 @@ public class PlayerMovement : MonoBehaviour
                     _minigameProgress = 0;
                     Contamination = 0;
                     _whispers.alpha = 0;
+                    _contaminationSlider.value = 0;
                     _path.Clear();
                 }
 
@@ -370,6 +373,7 @@ public class PlayerMovement : MonoBehaviour
     private void SetContamination(int amount)
     {
         Contamination += amount;
+        _contaminationSlider.value = Contamination;
         _whispers.alpha = Contamination * 0.01f;
         overlay.SetContamination(Contamination * 0.01f);
     }
