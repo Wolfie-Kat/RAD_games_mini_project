@@ -53,6 +53,9 @@ public class PlayerMovement : MonoBehaviour
     private Animator animator;
     private SpriteRenderer sr;
     private bool _isCoping;
+    private bool _isCopingTriggered;
+    private float _copingCooldownTimer;
+    private bool _onCopingCooldown;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
@@ -82,6 +85,14 @@ public class PlayerMovement : MonoBehaviour
     {
         if (_isCleaning)
         {
+            if (SceneManager.GetActiveScene().name.Contains("1") || SceneManager.GetActiveScene().name.Contains("2") || SceneManager.GetActiveScene().name == "Tutorial")
+            {
+                MovementAnimationManager(0, 1);
+            }
+            else
+            {
+                MovementAnimationManager(0, 0);
+            }
             _cleaningMinigameTimer += Time.deltaTime;
             CleaningSatisfaction -= 4 * Time.deltaTime;
             _minigameSlider.value = CleaningSatisfaction;
@@ -150,12 +161,35 @@ public class PlayerMovement : MonoBehaviour
                 AudioManager.Instance.Play(SoundType.Sudden_Bass);
             }
         }
+        
+        // Fix the contamination check:
+        if (Contamination >= 100 && !_isCopingTriggered && !_onCopingCooldown)
+        {
+            Contamination = 100; // Clamp to 100
+    
+            if (TalkedToPsychiatrist == false)
+            {
+                Contamination = 0;
+                _moveSpeed *= 2;
+                StartCoroutine(FollowPath());
+                StartCoroutine(Fade(true, false,
+                    "You feel too contaminated and miss your psychiatrist appointment.", 2f));
+            }
+            else
+            {
+                if (_isCoping == false && !_typeWriterScript.StartedTyping)
+                {
+                    StartCoroutine(StartCopeMinigame());
+                }
+            }
+        }
 
         if (_isCoping)
         {
             _cleaningMinigameTimer += Time.deltaTime;
             CleaningSatisfaction -= 4 * Time.deltaTime;
             _minigameSlider.value = CleaningSatisfaction;
+    
             if (Input.GetKeyDown(CurrentKey))
             {
                 if (CleaningSatisfaction < 10)
@@ -168,34 +202,24 @@ public class PlayerMovement : MonoBehaviour
                     CleaningSatisfaction = 0;
                 }
             }
+    
             if (CleaningSatisfaction >= 10)
             {
-                StopCoroutine(FollowPath());
+                // Stop the forced movement FIRST
+                StopAllCoroutines(); // This stops FollowPath
+                _isMoving = false;
+                transform.position = GetSnappedPosition(transform.position);
+                _targetPos = transform.position;
                 _playerCanvas.SetActive(false);
                 CurrentKey = "";
+                _moveSpeed = 4;
+                _isCoping = false;
                 _contaminated = false;
-            }
-        }
-        
-        if (Contamination == 100)
-        {
-            if (TalkedToPsychiatrist == false)
-            {
-                Contamination = 0;
-                overlay.SetContamination(0);
-                _moveSpeed *= 2;
+                _isCopingTriggered = false;
 
-                StartCoroutine(FollowPath());
-                StartCoroutine(Fade(true, false,
-                "You feel to contaminated and miss your psychiatrist appointment.", 2f));
-            }
-            else
-            {
-                if (_isCoping == false)
-                {
-                    _isCoping = true;
-                    StartCoroutine(StartCopeMinigame());
-                }
+                // Start cooldown before next coping minigame can trigger
+                _onCopingCooldown = true;
+                _copingCooldownTimer = 0f;
             }
         }
 
@@ -205,6 +229,17 @@ public class PlayerMovement : MonoBehaviour
             {
                 StartCoroutine(Fade(true, false,
                 "You cleaned yourself too many times and missed your psychiatrist appointment."));
+            }
+        }
+        
+        // Handle coping cooldown timer
+        if (_onCopingCooldown)
+        {
+            _copingCooldownTimer += Time.deltaTime;
+            if (_copingCooldownTimer >= 5) // 10 second cooldown before next coping event
+            {
+                _onCopingCooldown = false;
+                _copingCooldownTimer = 0f;
             }
         }
 
@@ -257,15 +292,24 @@ public class PlayerMovement : MonoBehaviour
                     {
                         if (SceneManager.GetActiveScene().name.ToLower().Contains("tutorial"))
                         {
-                            StartCoroutine(Fade(true, true, "", 1f, "Level1 Frederik"));
+                            StartCoroutine(Fade(true, true, "Open Closed Doors.\n \n Make it to your psychiatrist on time.", 1f, false, "Level1 Frederik"));
                         }
                         else if (SceneManager.GetActiveScene().name.Contains("1"))
                         {
-                            StartCoroutine(Fade(true, true, "You leave your house and head outside.", 1f, "Level2"));
+                            StartCoroutine(Fade(true, true, "You leave your house and head outside.", 1f, false, "Level2"));
                         }
                         else if (SceneManager.GetActiveScene().name.Contains("2"))
                         {
-                            StartCoroutine(Fade(true, true, "You reach the psychiatrists office.", 1f, "Level3 Frederik"));
+                            StartCoroutine(Fade(true, true, "You reach the psychiatrists office.", 1f, false, "Level3 Frederik"));
+                        }
+                        else if (SceneManager.GetActiveScene().name.Contains("3"))
+                        {
+                            StartCoroutine(Fade(true, true, "(O)pening (C)losed (D)oors \n " +
+                                                            "\n Around 2% of the world suffer from OCD." +
+                                                            "\n Contamination OCD is the intense, irrational fear of feeling contaminated." +
+                                                            "\n People with Contamination OCD can spend a long time performing their rituals or cleaning habits to deal with the issue." +
+                                                            "\n One of the only ways to deal with OCD is exposure therapy, teaching people with OCD to reduce their rituals and learn to balance the need to clean and acceptance of feeling contaminated." +
+                                                            "\n Acknowledging OCD being a real and serious issue is important.", 1f, false, "Tutorial"));
                         }
                     }
                 }
@@ -273,6 +317,7 @@ public class PlayerMovement : MonoBehaviour
                 if (IsPsychTile(targetCell) && TalkedToPsychiatrist == false)
                 {
                     TalkedToPsychiatrist = true;
+                    _contaminated = true;
                     StartCoroutine(Fade(true, false, "You have a great session with your psychiatrist. \n (You can now resist the contamination)", 1f, true));
                 }
                 
@@ -282,18 +327,18 @@ public class PlayerMovement : MonoBehaviour
 
     private IEnumerator StartCopeMinigame()
     {
+        _isCopingTriggered = true;
+        _isCoping = true;
+        _contaminated = true; // Block movement
+    
+        yield return new WaitForSeconds(Random.Range(2, 4));
         GenerateNewLetter();
-        if (Random.Range(0, 100) >= 90)
-        {
-                _isCoping = true;
-                _moveSpeed *= 0.5f;
-                CleaningSatisfaction = 0;
-                _playerCanvas.SetActive(true);
-                StartCoroutine(FollowPath());
-        }
-
-        yield return new WaitForSeconds(5);
-        StartCoroutine(StartCopeMinigame());
+    
+        _moveSpeed *= 0.5f;
+        CleaningSatisfaction = 0;
+        _playerCanvas.SetActive(true);
+    
+        yield return StartCoroutine(FollowPath()); // Use yield return to wait for completion
     }
 
     /// <summary>Converts WASD / arrow keys into a grid‑aligned direction.</summary>
@@ -413,14 +458,31 @@ public class PlayerMovement : MonoBehaviour
     private IEnumerator FollowPath()
     {
         _contaminated = true;
+        _isMoving = true; // Block input during forced movement
         print("Following Path!");
-        for (int i = _path.Count - 1; i >= 0; i--)
+    
+        // Make a copy of the path to iterate through
+        List<Vector2> pathCopy = new List<Vector2>(_path);
+    
+        for (int i = pathCopy.Count - 1; i >= 0; i--)
         {
-            StartCoroutine(MoveToTarget(_path[i]));
-            MovementAnimationManager(_path[i].x - transform.position.x, _path[i].y - transform.position.y);
-            yield return new WaitWhile(() => _isMoving);
-            _path.Remove(_path[i]);
+            Vector2 targetPosition = pathCopy[i];
+            Vector2 direction = (targetPosition - (Vector2)transform.position).normalized;
+        
+            // Set facing direction BEFORE moving
+            MovementAnimationManager(direction.x, direction.y);
+        
+            // Wait for movement to complete
+            yield return StartCoroutine(MoveToTarget(targetPosition));
+        
+            // Remove from original path only after successfully moving there
+            if (_path.Count > 0)
+            {
+                _path.RemoveAt(_path.Count - 1);
+            }
         }
+    
+        _isMoving = false;
     }
 
     // Better structure:
@@ -471,6 +533,10 @@ public class PlayerMovement : MonoBehaviour
     {
         float elapsed = 0;
         float startAlpha = _fadein.alpha;
+        if (_contaminated)
+        {
+            _contaminated = false;
+        }
 
         while (elapsed < duration)
         {
