@@ -157,11 +157,15 @@ MonoBehaviour:
   _finishMask:
     serializedVersion: 2
     m_Bits: 512
+  _psychMask:
+    serializedVersion: 2
+    m_Bits: 1024
   Contamination: 0
   MaxReturns: 3
   CurrentReturns: 0
   CurrentKey: 
   CleaningSatisfaction: 0
+  TalkedToPsychiatrist: 0
   _path: []
   _grid: {fileID: 0}
   _minigameSlider: {fileID: 6690718765647475186}

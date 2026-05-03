@@ -15,6 +15,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private LayerMask _doorMask;
     [SerializeField] private LayerMask _washingMask;
     [SerializeField] private LayerMask _finishMask;
+    [SerializeField] private LayerMask _psychMask;
 
     [Header("Player Stats")]
     public int Contamination;
@@ -22,6 +23,7 @@ public class PlayerMovement : MonoBehaviour
     public int CurrentReturns;
     public string CurrentKey;
     public float CleaningSatisfaction;
+    public bool TalkedToPsychiatrist;
 
     [Header("Path Taken")]
     [SerializeField] private List<Vector2> _path;
@@ -50,6 +52,7 @@ public class PlayerMovement : MonoBehaviour
     private bool isInteracting = false;
     private Animator animator;
     private SpriteRenderer sr;
+    private bool _isCoping;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
@@ -148,15 +151,54 @@ public class PlayerMovement : MonoBehaviour
                 AudioManager.Instance.Play(SoundType.Sudden_Bass);
             }
         }
+
+        if (_isCoping)
+        {
+            _cleaningMinigameTimer += Time.deltaTime;
+            CleaningSatisfaction -= 4 * Time.deltaTime;
+            _minigameSlider.value = CleaningSatisfaction;
+            if (Input.GetKeyDown(CurrentKey))
+            {
+                if (CleaningSatisfaction < 10)
+                {
+                    CleaningSatisfaction += 1f;
+                }
+
+                if (CleaningSatisfaction < 0)
+                {
+                    CleaningSatisfaction = 0;
+                }
+            }
+
+            if (CleaningSatisfaction >= 10)
+            {
+                StopCoroutine(FollowPath());
+                _playerCanvas.SetActive(false);
+                CurrentKey = "";
+                _contaminated = false;
+            }
+        }
+        
         if (Contamination == 100)
         {
-            Contamination = 0;
-            overlay.SetContamination(0);
-            _moveSpeed *= 2;
+            if (TalkedToPsychiatrist == false)
+            {
+                Contamination = 0;
+                overlay.SetContamination(0);
+                _moveSpeed *= 2;
 
-            StartCoroutine(FollowPath());
-            StartCoroutine(Fade(true, false,
+                StartCoroutine(FollowPath());
+                StartCoroutine(Fade(true, false,
                 "You feel to contaminated and miss your psychiatrist appointment.", 2f));
+            }
+            else
+            {
+                if (_isCoping == false)
+                {
+                    _isCoping = true;
+                    StartCoroutine(StartCopeMinigame());
+                }
+            }
         }
 
         if (CurrentReturns == MaxReturns)
@@ -228,8 +270,34 @@ public class PlayerMovement : MonoBehaviour
                         }
                     }
                 }
+
+                if (IsPsychTile(targetCell) && TalkedToPsychiatrist == false)
+                {
+                    TalkedToPsychiatrist = true;
+                    if (_typeWriterScript.StartedTyping == false)
+                    {
+                        // Add player interaction with psychiatrist here
+                    }
+                }
+                
             }
         }
+    }
+
+    private IEnumerator StartCopeMinigame()
+    {
+        GenerateNewLetter();
+        if (Random.Range(0, 100) >= 90)
+        {
+                _isCoping = true;
+                _moveSpeed *= 0.5f;
+                CleaningSatisfaction = 0;
+                _playerCanvas.SetActive(true);
+                StartCoroutine(FollowPath());
+        }
+
+        yield return new WaitForSeconds(5);
+        StartCoroutine(StartCopeMinigame());
     }
 
     /// <summary>Converts WASD / arrow keys into a grid‑aligned direction.</summary>
@@ -297,6 +365,13 @@ public class PlayerMovement : MonoBehaviour
         Collider2D hit = Physics2D.OverlapCircle(worldPosition, checkRadius, _finishMask);
         return hit;
     }
+    
+    private bool IsPsychTile(Vector2 worldPosition)
+    {
+        float checkRadius = _grid.cellSize.x * 0.4f;
+        Collider2D hit = Physics2D.OverlapCircle(worldPosition, checkRadius, _psychMask);
+        return hit;
+    }
 
     /// <summary>Checks if the destination cell is free of obstacles.</summary>
     private bool CanMoveTo(Vector2 worldPosition)
@@ -348,10 +423,6 @@ public class PlayerMovement : MonoBehaviour
             StartCoroutine(MoveToTarget(_path[i]));
             yield return new WaitWhile(() => _isMoving);
             _path.Remove(_path[i]);
-        }
-
-        if (_path.Count == 0)
-        {
         }
     }
 
