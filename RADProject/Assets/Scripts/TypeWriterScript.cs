@@ -18,6 +18,7 @@ public class TypeWriterScript : MonoBehaviour
             GetComponent<TextMeshProUGUI>().text = fullText.Substring(0, i);
 
             yield return new WaitForSeconds(typingDelay);
+            AudioManager.Instance.Play(SoundType.Text_Boop);
         }
 
         yield return new WaitForSeconds(typingDelay * fullText.Length);
