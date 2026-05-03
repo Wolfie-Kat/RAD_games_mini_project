@@ -144,7 +144,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a0a34c6730d9fde41b82fd64dbd4a50c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
-  _moveSpeed: 5
+  _moveSpeed: 4
   _obstacleMask:
     serializedVersion: 2
     m_Bits: 64
@@ -886,20 +886,72 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AudioManager
   AllSounds:
   - Type: 16
-    Clip: {fileID: 8300000, guid: a3001877ec7eda841a4583b1c9d61a8a, type: 3}
-    Volume: 0.5
+    Clip: {fileID: 8300000, guid: f5eb47d0763db384aa9a87eade48b77e, type: 3}
+    Volume: 0.05
     Source: {fileID: 0}
   - Type: 17
-    Clip: {fileID: 8300000, guid: 40a807b3836e11945b7a145b96a48e31, type: 3}
-    Volume: 0.5
+    Clip: {fileID: 8300000, guid: 5bc4f4cbcce2d064589d0ffca0bdf77f, type: 3}
+    Volume: 0.05
     Source: {fileID: 0}
   - Type: 18
-    Clip: {fileID: 8300000, guid: 6a7f7ee58faf20e499d009969dd25f9c, type: 3}
-    Volume: 0.5
+    Clip: {fileID: 8300000, guid: 9a86e236dc8302e419cb1ee79e0de35d, type: 3}
+    Volume: 0.05
     Source: {fileID: 0}
   - Type: 19
-    Clip: {fileID: 8300000, guid: cb3b902643fe9d94cada294d58805c6f, type: 3}
-    Volume: 0.5
+    Clip: {fileID: 8300000, guid: cf95b3e1ba2992b49a36597acd233330, type: 3}
+    Volume: 0.05
+    Source: {fileID: 0}
+  - Type: 0
+    Clip: {fileID: 8300000, guid: b89676ae339f446459012babf2a62228, type: 3}
+    Volume: 0.25
+    Source: {fileID: 0}
+  - Type: 1
+    Clip: {fileID: 8300000, guid: 73c98515d1d7f70458e28544e752c3aa, type: 3}
+    Volume: 0.35
+    Source: {fileID: 0}
+  - Type: 2
+    Clip: {fileID: 8300000, guid: 0d5cdda65967f454582211b6165ad2c4, type: 3}
+    Volume: 0.25
+    Source: {fileID: 0}
+  - Type: 14
+    Clip: {fileID: 8300000, guid: 8081d79be6ea7ec4eacac130380afb14, type: 3}
+    Volume: 0.1
+    Source: {fileID: 0}
+  - Type: 21
+    Clip: {fileID: 8300000, guid: a23b39d8a07c7c44db645367d7cda3c9, type: 3}
+    Volume: 0.1
+    Source: {fileID: 0}
+  - Type: 22
+    Clip: {fileID: 8300000, guid: 97a3176eac765ca4b89cf9c345acfc4c, type: 3}
+    Volume: 0.1
+    Source: {fileID: 0}
+  - Type: 23
+    Clip: {fileID: 8300000, guid: eaf930bab7d172e42abe83f7e9a20f96, type: 3}
+    Volume: 0.1
+    Source: {fileID: 0}
+  - Type: 20
+    Clip: {fileID: 8300000, guid: ab20c64ba7c1cdf4daa08111c50342bc, type: 3}
+    Volume: 0.1
+    Source: {fileID: 0}
+  - Type: 7
+    Clip: {fileID: 8300000, guid: 3993163a210083941a432642d7cf34e4, type: 3}
+    Volume: 0.1
+    Source: {fileID: 0}
+  - Type: 8
+    Clip: {fileID: 8300000, guid: d3203292ef8025c4991ef92be98d653f, type: 3}
+    Volume: 0.1
+    Source: {fileID: 0}
+  - Type: 9
+    Clip: {fileID: 8300000, guid: 125abfa4200f45e4f8879b882d6dda72, type: 3}
+    Volume: 0.1
+    Source: {fileID: 0}
+  - Type: 6
+    Clip: {fileID: 8300000, guid: 0ab29ed9666de4e43b8b993c2d4828e4, type: 3}
+    Volume: 0.03
+    Source: {fileID: 0}
+  - Type: 5
+    Clip: {fileID: 8300000, guid: f8060ef59fa7460429100246b5b25daf, type: 3}
+    Volume: 0.2
     Source: {fileID: 0}
 --- !u!1 &5310277509665669491
 GameObject:
@@ -1203,7 +1255,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &6809246402516553487
 RectTransform:
   m_ObjectHideFlags: 0

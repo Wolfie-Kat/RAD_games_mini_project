@@ -434,7 +434,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void WashingStart()
     {
-        if (SceneManager.GetActiveScene().name.Contains("Level2"))
+        if (SceneManager.GetActiveScene().name.Contains("2"))
         {
             AudioManager.Instance.Ambience(SoundType.Pond_Water);
         }
@@ -452,7 +452,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void WashingStop()
     {
-        if (SceneManager.GetActiveScene().name.Contains("Level2"))
+        if (SceneManager.GetActiveScene().name.Contains("2"))
         {
             AudioManager.Instance.StopAmbience(SoundType.Pond_Water);
             StopWhispers();
@@ -477,15 +477,15 @@ public class PlayerMovement : MonoBehaviour
         {
             return;
         }
-        if (SceneManager.GetActiveScene().name.Contains("Level1 Katrine"))
+        if (SceneManager.GetActiveScene().name.Contains("1"))
         {
             AudioManager.Instance.Ambience(SoundType.Light_Ambience);
         }
-        else if (SceneManager.GetActiveScene().name.Contains("Level2"))
+        else if (SceneManager.GetActiveScene().name.Contains("2"))
         {
             AudioManager.Instance.Ambience(SoundType.Birds_Ambience);
         }
-        else if (SceneManager.GetActiveScene().name.Contains("Level3"))
+        else if (SceneManager.GetActiveScene().name.Contains("3"))
         {
             AudioManager.Instance.Ambience(SoundType.Fan_Ambience);
         }
@@ -525,7 +525,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void FootstepManager()
     {
-        if (SceneManager.GetActiveScene().name.Contains("Level2"))
+        if (SceneManager.GetActiveScene().name.Contains("2"))
         {
             if (_stepAlternate)
             {
