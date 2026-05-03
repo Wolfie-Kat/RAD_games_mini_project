@@ -177,7 +177,7 @@ public class PlayerMovement : MonoBehaviour
             }
             else
             {
-                if (_isCoping == false && !_typeWriterScript.StartedTyping)
+                if (_isCoping == false && _fadein.alpha <= 0.1f)
                 {
                     StartCoroutine(StartCopeMinigame());
                 }
