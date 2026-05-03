@@ -46,6 +46,8 @@ public class AudioManager : MonoBehaviour
     //Runtime collections
     private Dictionary<SoundType, Sound> _soundDictionary = new Dictionary<SoundType, Sound>();
     private AudioSource ambienceSrc;
+
+    private Dictionary<SoundType, AudioSource> _ambienceSources = new();
  
     private void Awake()
     {
@@ -110,22 +112,41 @@ public class AudioManager : MonoBehaviour
             Debug.LogWarning($"Ambience track {type} not found!");
             return;
         }
+
+        if (_ambienceSources.ContainsKey(type))
+            return;
  
         var container = new GameObject($"Ambience_{type}");
         container.transform.SetParent(transform);
+        
         ambienceSrc = container.AddComponent<AudioSource>();
         ambienceSrc.loop = true;
- 
         ambienceSrc.clip = track.Clip;
         ambienceSrc.volume = track.Volume;
         ambienceSrc.Play();
+
+        _ambienceSources[type] = ambienceSrc;
     }
     public void StopAmbience(SoundType type)
     {
-        var obj = transform.Find($"Ambience_{type}");
-        if (obj != null)
+        // var obj = transform.Find($"Ambience_{type}");
+        // if (obj != null)
+        // {
+        //     Destroy(obj.gameObject);
+        // }
+
+        if (_ambienceSources.TryGetValue(type, out var src))
         {
-            Destroy(obj.gameObject);
+            Destroy(src.gameObject);
+            _ambienceSources.Remove(type);
+        }
+    }
+
+    public void SetAmbienceVolume(SoundType type, float volume)
+    {
+        if (_ambienceSources.TryGetValue(type, out var src))
+        {
+            src.volume = volume;
         }
     }
 }
