@@ -80,7 +80,6 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        MovementAnimationManager();
         if (_isCleaning)
         {
             _cleaningMinigameTimer += Time.deltaTime;
@@ -146,7 +145,7 @@ public class PlayerMovement : MonoBehaviour
             {
                 AudioManager.Instance.SetAmbienceVolume(SoundType.Whispers, 0.4f);
             }
-            if (Contamination >= 100)
+            if (Contamination >= 100 && !TalkedToPsychiatrist)
             {
                 AudioManager.Instance.Play(SoundType.Sudden_Bass);
             }
@@ -169,7 +168,6 @@ public class PlayerMovement : MonoBehaviour
                     CleaningSatisfaction = 0;
                 }
             }
-
             if (CleaningSatisfaction >= 10)
             {
                 StopCoroutine(FollowPath());
@@ -214,6 +212,7 @@ public class PlayerMovement : MonoBehaviour
         if (_isMoving || _contaminated) return;
 
         Vector2 inputDirection = GetInputDirection();
+        MovementAnimationManager(inputDirection.x, inputDirection.y);
         if (inputDirection != Vector2.zero)
         {
             Vector2 targetCell = _targetPos + inputDirection * _grid.cellSize;
@@ -274,10 +273,7 @@ public class PlayerMovement : MonoBehaviour
                 if (IsPsychTile(targetCell) && TalkedToPsychiatrist == false)
                 {
                     TalkedToPsychiatrist = true;
-                    if (_typeWriterScript.StartedTyping == false)
-                    {
-                        // Add player interaction with psychiatrist here
-                    }
+                    StartCoroutine(Fade(true, false, "You have a great session with your psychiatrist. \n (You can now resist the contamination)", 1f, true));
                 }
                 
             }
@@ -421,13 +417,14 @@ public class PlayerMovement : MonoBehaviour
         for (int i = _path.Count - 1; i >= 0; i--)
         {
             StartCoroutine(MoveToTarget(_path[i]));
+            MovementAnimationManager(_path[i].x - transform.position.x, _path[i].y - transform.position.y);
             yield return new WaitWhile(() => _isMoving);
             _path.Remove(_path[i]);
         }
     }
 
     // Better structure:
-    private IEnumerator Fade(bool fadeOut, bool win, string text = "", float duration = 1f, string sceneName = "")
+    private IEnumerator Fade(bool fadeOut, bool win, string text = "", float duration = 1f, bool psychiatristSquare = false, string sceneName = "")
     {
         if (fadeOut)
         {
@@ -447,6 +444,10 @@ public class PlayerMovement : MonoBehaviour
         {
             if (win)
                 SceneManager.LoadScene(sceneName);
+            else if (psychiatristSquare)
+            {
+                StartCoroutine(FadeOutCoroutine(duration));
+            }
             else
                 ReloadScene();
         }
@@ -561,38 +562,34 @@ public class PlayerMovement : MonoBehaviour
             AudioManager.Instance.Ambience(SoundType.Fan_Ambience);
         }
     }
-    
-   private void MovementAnimationManager()
-{
-
-  float h = Input.GetAxisRaw("Horizontal");
-  float v = Input.GetAxisRaw("Vertical");
-
-    bool wantsToMove = h != 0 || v != 0;
-
-    if (_isCleaning)
+    private void MovementAnimationManager(float x, float y)
     {
-        animator.SetBool("Interacting", true);
-        animator.SetBool("Moving", false);
-    }
-    else if (_isMoving || wantsToMove)
-    {
-        animator.SetBool("Interacting", false);
-        animator.SetBool("Moving", true);
-    }
-    else
-    {
-        animator.SetBool("Interacting", false);
-        animator.SetBool("Moving", false);
-    }
 
-    if(_isCleaning) return;
+        bool wantsToMove = x != 0 || y != 0;
 
-    if (h > 0)      { animator.SetInteger("Facing", 2); sr.flipX = false; }
-    else if (h < 0) { animator.SetInteger("Facing", 2); sr.flipX = true; }
-    else if (v > 0) { animator.SetInteger("Facing", 1); sr.flipX = false; }
-    else if (v < 0) { animator.SetInteger("Facing", 0); sr.flipX = false; }
-}
+        if (_isCleaning)
+        {
+            animator.SetBool("Interacting", true);
+            animator.SetBool("Moving", false);
+        }
+        else if (_isMoving || wantsToMove)
+        {
+            animator.SetBool("Interacting", false);
+            animator.SetBool("Moving", true);
+        }
+        else
+        {
+            animator.SetBool("Interacting", false);
+            animator.SetBool("Moving", false);
+        }
+
+        if(_isCleaning) return;
+
+        if (x > 0)      { animator.SetInteger("Facing", 2); sr.flipX = false; }
+        else if (x < 0) { animator.SetInteger("Facing", 2); sr.flipX = true; }
+        else if (y > 0) { animator.SetInteger("Facing", 1); sr.flipX = false; }
+        else if (y < 0) { animator.SetInteger("Facing", 0); sr.flipX = false; }
+    }
 
     private void FootstepManager()
     {
