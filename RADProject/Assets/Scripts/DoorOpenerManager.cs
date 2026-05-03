@@ -25,10 +25,12 @@ public class DoorOpenerManager : MonoBehaviour
     {
         if (_doorType == DoorType.Iron)
         {
+            AudioManager.Instance.Play(SoundType.Door_Open);
             _spriteRenderer.enabled = false;
         }
         else
         {
+            AudioManager.Instance.Play(SoundType.Door_Open);
             _collider2D.enabled = false;
             _spriteRenderer.enabled = false;
         }
@@ -39,6 +41,7 @@ public class DoorOpenerManager : MonoBehaviour
     {
         if (_doorType == DoorType.Iron)
         {
+            AudioManager.Instance.Play(SoundType.Door_Close);
             _spriteRenderer.enabled = true;
         }
     }

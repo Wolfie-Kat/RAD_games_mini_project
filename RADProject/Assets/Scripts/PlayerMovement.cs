@@ -54,10 +54,7 @@ public class PlayerMovement : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
-        if (SceneManager.GetActiveScene().name.Contains("Level1 Katrine"))
-        {
-            AudioManager.Instance.Ambience(SoundType.Light_Ambience);
-        }
+        AmbianceManager();
 
         CurrentReturns = 0;
         // If no grid is assigned, try to find one in the scene
@@ -123,8 +120,33 @@ public class PlayerMovement : MonoBehaviour
                 CurrentReturns++;
                 overlay.SetContamination(0);
                 _playerCanvas.SetActive(false);
+                WashingStop();
             }
             return;
+        }
+        if (Contamination > 0)
+        {
+            AudioManager.Instance.Ambience(SoundType.Whispers);
+            if (Contamination >= 20)
+            {
+                AudioManager.Instance.SetAmbienceVolume(SoundType.Whispers, 0.1f);
+            }
+            if (Contamination >= 40)
+            {
+                AudioManager.Instance.SetAmbienceVolume(SoundType.Whispers, 0.2f);
+            }
+            if (Contamination >= 60)
+            {
+                AudioManager.Instance.SetAmbienceVolume(SoundType.Whispers, 0.3f);
+            }
+            if (Contamination >= 80)
+            {
+                AudioManager.Instance.SetAmbienceVolume(SoundType.Whispers, 0.4f);
+            }
+            if (Contamination >= 100)
+            {
+                AudioManager.Instance.Play(SoundType.Sudden_Bass);
+            }
         }
         if (Contamination == 100)
         {
@@ -173,6 +195,7 @@ public class PlayerMovement : MonoBehaviour
                 {
                     if (Contamination > 0)
                     {
+                        WashingStart();
                         _isCleaning = true;
                         _playerCanvas.SetActive(true);
                         CleaningSatisfaction = 10;
@@ -407,6 +430,67 @@ public class PlayerMovement : MonoBehaviour
         overlay.SetContamination(Contamination * 0.01f);
     }
 
+    // Audio Managers
+
+    private void WashingStart()
+    {
+        if (SceneManager.GetActiveScene().name.Contains("Level2"))
+        {
+            AudioManager.Instance.Ambience(SoundType.Pond_Water);
+        }
+        else
+        {
+            AudioManager.Instance.Play(SoundType.Sink_Water_Start);
+            Invoke(nameof(StartLoopSounds), 0.85f);
+        }
+    }
+    private void StartLoopSounds()
+    {
+        AudioManager.Instance.Ambience(SoundType.Sink_Water_Loop);
+        AudioManager.Instance.Ambience(SoundType.Pond_Water);
+    }
+
+    private void WashingStop()
+    {
+        if (SceneManager.GetActiveScene().name.Contains("Level2"))
+        {
+            AudioManager.Instance.StopAmbience(SoundType.Pond_Water);
+            StopWhispers();
+        }
+        else
+        {
+            AudioManager.Instance.StopAmbience(SoundType.Sink_Water_Loop);
+            AudioManager.Instance.StopAmbience(SoundType.Pond_Water);
+            AudioManager.Instance.Play(SoundType.Sink_Water_Stop);
+            StopWhispers();
+        }
+    }
+
+    private void StopWhispers()
+    {
+        AudioManager.Instance.StopAmbience(SoundType.Whispers);
+    }
+
+    private void AmbianceManager()
+    {
+        if (AudioManager.Instance == null)
+        {
+            return;
+        }
+        if (SceneManager.GetActiveScene().name.Contains("Level1 Katrine"))
+        {
+            AudioManager.Instance.Ambience(SoundType.Light_Ambience);
+        }
+        else if (SceneManager.GetActiveScene().name.Contains("Level2"))
+        {
+            AudioManager.Instance.Ambience(SoundType.Birds_Ambience);
+        }
+        else if (SceneManager.GetActiveScene().name.Contains("Level3"))
+        {
+            AudioManager.Instance.Ambience(SoundType.Fan_Ambience);
+        }
+    }
+    
    private void MovementAnimationManager()
 {
 
@@ -441,7 +525,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void FootstepManager()
     {
-        if (SceneManager.GetActiveScene().name.ToLower().Contains("Level2"))
+        if (SceneManager.GetActiveScene().name.Contains("Level2"))
         {
             if (_stepAlternate)
             {

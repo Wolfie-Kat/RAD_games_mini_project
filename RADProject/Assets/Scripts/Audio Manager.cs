@@ -46,17 +46,34 @@ public class AudioManager : MonoBehaviour
     //Runtime collections
     private Dictionary<SoundType, Sound> _soundDictionary = new Dictionary<SoundType, Sound>();
     private AudioSource ambienceSrc;
+
+    private Dictionary<SoundType, AudioSource> _ambienceSources = new();
  
     private void Awake()
     {
-        //Assign singleton
-        Instance = this;
+        // //Assign singleton
+        // Instance = this;
  
-        //Set up sounds
-        foreach(var s in AllSounds)
+        // //Set up sounds
+        // foreach(var s in AllSounds)
+        // {
+        //     _soundDictionary[s.Type] = s;
+        // }
+
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+
+        foreach (var s in AllSounds)
         {
             _soundDictionary[s.Type] = s;
         }
+        
     }
  
  
@@ -95,21 +112,41 @@ public class AudioManager : MonoBehaviour
             Debug.LogWarning($"Ambience track {type} not found!");
             return;
         }
+
+        if (_ambienceSources.ContainsKey(type))
+            return;
  
-        if (ambienceSrc == null)
-        {
-            var container = new GameObject($"Ambience_{type}");
-            container.transform.SetParent(transform);
-            ambienceSrc = container.AddComponent<AudioSource>();
-            ambienceSrc.loop = true;
-        }
- 
+        var container = new GameObject($"Ambience_{type}");
+        container.transform.SetParent(transform);
+        
+        ambienceSrc = container.AddComponent<AudioSource>();
+        ambienceSrc.loop = true;
         ambienceSrc.clip = track.Clip;
         ambienceSrc.volume = track.Volume;
         ambienceSrc.Play();
+
+        _ambienceSources[type] = ambienceSrc;
     }
     public void StopAmbience(SoundType type)
     {
-        Destroy(transform.Find($"Ambience_{type}").gameObject);
+        // var obj = transform.Find($"Ambience_{type}");
+        // if (obj != null)
+        // {
+        //     Destroy(obj.gameObject);
+        // }
+
+        if (_ambienceSources.TryGetValue(type, out var src))
+        {
+            Destroy(src.gameObject);
+            _ambienceSources.Remove(type);
+        }
+    }
+
+    public void SetAmbienceVolume(SoundType type, float volume)
+    {
+        if (_ambienceSources.TryGetValue(type, out var src))
+        {
+            src.volume = volume;
+        }
     }
 }
