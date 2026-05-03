@@ -49,14 +49,29 @@ public class AudioManager : MonoBehaviour
  
     private void Awake()
     {
-        //Assign singleton
-        Instance = this;
+        // //Assign singleton
+        // Instance = this;
  
-        //Set up sounds
-        foreach(var s in AllSounds)
+        // //Set up sounds
+        // foreach(var s in AllSounds)
+        // {
+        //     _soundDictionary[s.Type] = s;
+        // }
+
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+
+        foreach (var s in AllSounds)
         {
             _soundDictionary[s.Type] = s;
         }
+        
     }
  
  
@@ -96,13 +111,10 @@ public class AudioManager : MonoBehaviour
             return;
         }
  
-        if (ambienceSrc == null)
-        {
-            var container = new GameObject($"Ambience_{type}");
-            container.transform.SetParent(transform);
-            ambienceSrc = container.AddComponent<AudioSource>();
-            ambienceSrc.loop = true;
-        }
+        var container = new GameObject($"Ambience_{type}");
+        container.transform.SetParent(transform);
+        ambienceSrc = container.AddComponent<AudioSource>();
+        ambienceSrc.loop = true;
  
         ambienceSrc.clip = track.Clip;
         ambienceSrc.volume = track.Volume;
@@ -110,6 +122,10 @@ public class AudioManager : MonoBehaviour
     }
     public void StopAmbience(SoundType type)
     {
-        Destroy(transform.Find($"Ambience_{type}").gameObject);
+        var obj = transform.Find($"Ambience_{type}");
+        if (obj != null)
+        {
+            Destroy(obj.gameObject);
+        }
     }
 }

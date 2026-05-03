@@ -51,10 +51,7 @@ public class PlayerMovement : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
-        if (SceneManager.GetActiveScene().name.Contains("Level1 Katrine"))
-        {
-            AudioManager.Instance.Ambience(SoundType.Light_Ambience);
-        }
+        AmbianceManager();
 
         CurrentReturns = 0;
         // If no grid is assigned, try to find one in the scene
@@ -116,6 +113,7 @@ public class PlayerMovement : MonoBehaviour
                 CurrentReturns++;
                 overlay.SetContamination(0);
                 _playerCanvas.SetActive(false);
+                WashingStop();
             }
             return;
         }
@@ -166,6 +164,7 @@ public class PlayerMovement : MonoBehaviour
                 {
                     if (Contamination > 0)
                     {
+                        WashingStart();
                         _isCleaning = true;
                         _playerCanvas.SetActive(true);
                         CleaningSatisfaction = 10;
@@ -399,10 +398,64 @@ public class PlayerMovement : MonoBehaviour
         _whispers.alpha = Contamination * 0.01f;
         overlay.SetContamination(Contamination * 0.01f);
     }
+
+    // Audio Managers
+
+    private void WashingStart()
+    {
+        if (SceneManager.GetActiveScene().name.Contains("Level2"))
+        {
+            AudioManager.Instance.Ambience(SoundType.Pond_Water);
+        }
+        else
+        {
+            AudioManager.Instance.Play(SoundType.Sink_Water_Start);
+            Invoke(nameof(StartLoopSounds), 0.85f);
+        }
+    }
+    private void StartLoopSounds()
+    {
+        AudioManager.Instance.Ambience(SoundType.Sink_Water_Loop);
+        AudioManager.Instance.Ambience(SoundType.Pond_Water);
+    }
+
+    private void WashingStop()
+    {
+        if (SceneManager.GetActiveScene().name.Contains("Level2"))
+        {
+            AudioManager.Instance.StopAmbience(SoundType.Pond_Water);
+        }
+        else
+        {
+            AudioManager.Instance.StopAmbience(SoundType.Sink_Water_Loop);
+            AudioManager.Instance.StopAmbience(SoundType.Pond_Water);
+            AudioManager.Instance.Play(SoundType.Sink_Water_Stop);
+        }
+    }
+
+    private void AmbianceManager()
+    {
+        if (AudioManager.Instance == null)
+        {
+            return;
+        }
+        if (SceneManager.GetActiveScene().name.Contains("Level1 Katrine"))
+        {
+            AudioManager.Instance.Ambience(SoundType.Light_Ambience);
+        }
+        else if (SceneManager.GetActiveScene().name.Contains("Level2"))
+        {
+            AudioManager.Instance.Ambience(SoundType.Birds_Ambience);
+        }
+        else if (SceneManager.GetActiveScene().name.Contains("Level3"))
+        {
+            AudioManager.Instance.Ambience(SoundType.Fan_Ambience);
+        }
+    }
     
     private void FootstepManager()
     {
-        if (SceneManager.GetActiveScene().name.ToLower().Contains("Level2"))
+        if (SceneManager.GetActiveScene().name.Contains("Level2"))
         {
             if (_stepAlternate)
             {
