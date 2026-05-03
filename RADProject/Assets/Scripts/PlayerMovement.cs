@@ -10,7 +10,7 @@ using UnityEngine.UI;
 public class PlayerMovement : MonoBehaviour
 {
     [Header("Movement Settings")]
-    [SerializeField] private float _moveSpeed = 5f;
+    [SerializeField] private float _moveSpeed = 1f;
     [SerializeField] private LayerMask _obstacleMask;
     [SerializeField] private LayerMask _doorMask;
     [SerializeField] private LayerMask _washingMask;
@@ -47,7 +47,10 @@ public class PlayerMovement : MonoBehaviour
     private int _minigameProgress;
     private int _minigameMaxProgress;
     private bool _stepAlternate = true;
-    
+    private bool isInteracting = false;
+    private Animator animator;
+    private SpriteRenderer sr;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
@@ -66,11 +69,15 @@ public class PlayerMovement : MonoBehaviour
         transform.position = GetSnappedPosition(transform.position);
         _targetPos = transform.position;
         StartCoroutine(Fade(false, true));
+
+        animator = GetComponent<Animator>();
+        sr = GetComponent<SpriteRenderer>();
     }
 
     // Update is called once per frame
     void Update()
     {
+        MovementAnimationManager();
         if (_isCleaning)
         {
             _cleaningMinigameTimer += Time.deltaTime;
@@ -209,15 +216,15 @@ public class PlayerMovement : MonoBehaviour
                     {
                         if (SceneManager.GetActiveScene().name.ToLower().Contains("tutorial"))
                         {
-                            StartCoroutine(Fade(true, true, "", 1f,"Frederik Level 1"));
+                            StartCoroutine(Fade(true, true, "", 1f, "Frederik Level 1"));
                         }
                         else if (SceneManager.GetActiveScene().name.Contains("1"))
                         {
-                            StartCoroutine(Fade(true, true, "You leave your house and head outside.", 1f,"Level 2"));
+                            StartCoroutine(Fade(true, true, "You leave your house and head outside.", 1f, "Level 2"));
                         }
                         else if (SceneManager.GetActiveScene().name.Contains("2"))
                         {
-                            StartCoroutine(Fade(true, true, "You reach the psychiatrists office.", 1f,"Level 3"));
+                            StartCoroutine(Fade(true, true, "You reach the psychiatrists office.", 1f, "Level 3"));
                         }
                     }
                 }
@@ -484,6 +491,38 @@ public class PlayerMovement : MonoBehaviour
         }
     }
     
+   private void MovementAnimationManager()
+{
+
+  float h = Input.GetAxisRaw("Horizontal");
+  float v = Input.GetAxisRaw("Vertical");
+
+    bool wantsToMove = h != 0 || v != 0;
+
+    if (_isCleaning)
+    {
+        animator.SetBool("Interacting", true);
+        animator.SetBool("Moving", false);
+    }
+    else if (_isMoving || wantsToMove)
+    {
+        animator.SetBool("Interacting", false);
+        animator.SetBool("Moving", true);
+    }
+    else
+    {
+        animator.SetBool("Interacting", false);
+        animator.SetBool("Moving", false);
+    }
+
+    if(_isCleaning) return;
+
+    if (h > 0)      { animator.SetInteger("Facing", 2); sr.flipX = false; }
+    else if (h < 0) { animator.SetInteger("Facing", 2); sr.flipX = true; }
+    else if (v > 0) { animator.SetInteger("Facing", 1); sr.flipX = false; }
+    else if (v < 0) { animator.SetInteger("Facing", 0); sr.flipX = false; }
+}
+
     private void FootstepManager()
     {
         if (SceneManager.GetActiveScene().name.Contains("Level2"))
@@ -502,15 +541,15 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             if (_stepAlternate)
-                {
-                    AudioManager.Instance.Play(SoundType.Step_Stone_1);
-                    _stepAlternate = !_stepAlternate;
-                }
-                else
-                {
-                    AudioManager.Instance.Play(SoundType.Step_Stone_2);
-                    _stepAlternate = !_stepAlternate;
-                }
+            {
+                AudioManager.Instance.Play(SoundType.Step_Stone_1);
+                _stepAlternate = !_stepAlternate;
+            }
+            else
+            {
+                AudioManager.Instance.Play(SoundType.Step_Stone_2);
+                _stepAlternate = !_stepAlternate;
+            }
         }
     }
 }
