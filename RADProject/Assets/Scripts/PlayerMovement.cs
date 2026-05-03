@@ -258,15 +258,15 @@ public class PlayerMovement : MonoBehaviour
                     {
                         if (SceneManager.GetActiveScene().name.ToLower().Contains("tutorial"))
                         {
-                            StartCoroutine(Fade(true, true, "", 1f, "Frederik Level 1"));
+                            StartCoroutine(Fade(true, true, "", 1f, "Level1 Frederik"));
                         }
                         else if (SceneManager.GetActiveScene().name.Contains("1"))
                         {
-                            StartCoroutine(Fade(true, true, "You leave your house and head outside.", 1f, "Level 2"));
+                            StartCoroutine(Fade(true, true, "You leave your house and head outside.", 1f, "Level2"));
                         }
                         else if (SceneManager.GetActiveScene().name.Contains("2"))
                         {
-                            StartCoroutine(Fade(true, true, "You reach the psychiatrists office.", 1f, "Level 3"));
+                            StartCoroutine(Fade(true, true, "You reach the psychiatrists office.", 1f, "Level3 Frederik"));
                         }
                     }
                 }
