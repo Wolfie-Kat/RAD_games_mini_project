@@ -13,7 +13,7 @@ public class TypeWriterScript : MonoBehaviour
         StartedTyping = true;
         GetComponent<TextMeshProUGUI>().text = "";
 
-        for (int i = 0; i < fullText.Length; i++)
+        for (int i = 0; i <= fullText.Length; i++)
         {
             GetComponent<TextMeshProUGUI>().text = fullText.Substring(0, i);
 
